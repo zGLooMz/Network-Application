@@ -1,47 +1,39 @@
 ﻿using Network;
-using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
 namespace Client
 {
-    internal class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-
-
-            SentMessage(args[0], args[1]);
+            SentMessage("Alex");
         }
 
-
-        public static void SentMessage(string From, string ip)
+        public static void SentMessage(string From, string ip = "127.0.0.1")
         {
-            
             UdpClient udpClient = new UdpClient();
             IPEndPoint iPEndPoint = new IPEndPoint(IPAddress.Parse(ip), 12345);
-
-            
-            while(true)
+            while (true)
             {
-                string messageText;
-                do
-                {
-                    Console.Clear();
-                    Console.WriteLine("Введите сообщение.");
-                    messageText = Console.ReadLine();
+                Console.Write("Введите сообщение (или 'Exit' для выхода): ");
+                string input = Console.ReadLine();
 
+                if (input.ToLower() == "exit")
+                {
+                    break;
                 }
-                while (string.IsNullOrEmpty(messageText));
-                
-                Message message = new Message() { Text = messageText, NicknameFrom = From, NicknameTo = "Server", DateTime = DateTime.Now };
+                Message message = new Message() { Text = input, DateTime = DateTime.Now, NiknameFrom = From, NiknameTo = "All" };
                 string json = message.SerializeMessageToJson();
 
                 byte[] data = Encoding.UTF8.GetBytes(json);
-                udpClient.Send(data,data.Length,iPEndPoint);
+                udpClient.Send(data, data.Length, iPEndPoint);
+                byte[] buffer = udpClient.Receive(ref iPEndPoint);
+                var answer = Encoding.UTF8.GetString(buffer);
+                Console.WriteLine(answer);
             }
-
         }
     }
 }
